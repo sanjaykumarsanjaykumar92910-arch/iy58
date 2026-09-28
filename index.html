@@ -1,0 +1,421 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Circuit Simulator UI</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        /* Custom styles for specific UI nuances */
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            user-select: none;
+            overflow: hidden;
+            background-color: #9bbff4; /* Main background light blue */
+        }
+
+        .panel-border {
+            border: 1.5px solid #000;
+            background-color: #f3f4f6;
+        }
+
+        .tool-btn {
+            transition: background-color 0.2s;
+            cursor: grab;
+        }
+        
+        .tool-btn:hover {
+            background-color: #e5e7eb;
+        }
+
+        .tool-btn:active {
+            cursor: grabbing;
+        }
+
+        .custom-checkbox {
+            appearance: none;
+            width: 16px;
+            height: 16px;
+            border: 1.5px solid #000;
+            border-radius: 2px;
+            background-color: #fff;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+        }
+
+        .custom-checkbox:checked::after {
+            content: '✔';
+            color: black;
+            font-size: 12px;
+            line-height: 1;
+        }
+
+        .custom-radio {
+            appearance: none;
+            width: 16px;
+            height: 16px;
+            border: 1.5px solid #000;
+            border-radius: 50%;
+            background-color: #fff;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+        }
+
+        .custom-radio:checked::after {
+            content: '';
+            width: 8px;
+            height: 8px;
+            background-color: black;
+            border-radius: 50%;
+        }
+
+        /* Scrollbar hiding for tool panel */
+        .no-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+        .no-scrollbar {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+    </style>
+</head>
+<body class="w-screen h-screen relative">
+
+    <!-- Main simulation canvas area -->
+    <main class="absolute inset-0 z-0" id="canvas-area">
+        <!-- Interactive circuit components would be dropped here -->
+    </main>
+
+    <!-- Left Toolbar -->
+    <div class="absolute left-6 top-6 bottom-24 flex items-center">
+        <!-- Scroll indicator dots -->
+        <div class="flex flex-col space-y-1 mr-2">
+            <div class="w-1.5 h-1.5 bg-black rounded-full"></div>
+            <div class="w-1.5 h-1.5 bg-gray-400 rounded-full border border-black border-opacity-50"></div>
+            <div class="w-1.5 h-1.5 bg-gray-400 rounded-full border border-black border-opacity-50"></div>
+        </div>
+
+        <!-- Tool panel -->
+        <div class="panel-border w-[88px] h-full flex flex-col rounded-sm relative z-10 shadow-sm">
+            <!-- Up Arrow -->
+            <button class="w-full h-8 flex items-center justify-center border-b-[1.5px] border-black bg-[#e2e3e5] hover:bg-gray-300 flex-shrink-0 cursor-pointer">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="gray" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M18 15l-6-6-6 6"/></svg>
+            </button>
+
+            <!-- Tools List -->
+            <div class="flex-1 overflow-y-auto no-scrollbar flex flex-col items-center py-2 space-y-4" id="tool-list">
+                
+                <!-- Wire -->
+                <div class="tool-btn flex flex-col items-center justify-center w-full py-1" draggable="true">
+                    <svg width="50" height="30" viewBox="0 0 50 30">
+                        <line x1="5" y1="15" x2="45" y2="15" stroke="black" stroke-width="2.5"/>
+                    </svg>
+                    <span class="text-xs text-black font-medium mt-1">Wire</span>
+                </div>
+
+                <!-- Battery -->
+                <div class="tool-btn flex flex-col items-center justify-center w-full py-1" draggable="true">
+                    <svg width="50" height="30" viewBox="0 0 50 30">
+                        <line x1="5" y1="15" x2="20" y2="15" stroke="black" stroke-width="2"/>
+                        <line x1="20" y1="5" x2="20" y2="25" stroke="black" stroke-width="2"/>
+                        <line x1="30" y1="10" x2="30" y2="20" stroke="black" stroke-width="4"/>
+                        <line x1="30" y1="15" x2="45" y2="15" stroke="black" stroke-width="2"/>
+                    </svg>
+                    <span class="text-xs text-black font-medium mt-1">Battery</span>
+                </div>
+
+                <!-- AC Voltage -->
+                <div class="tool-btn flex flex-col items-center justify-center w-full py-1" draggable="true">
+                    <svg width="50" height="30" viewBox="0 0 50 30">
+                        <circle cx="25" cy="15" r="12" fill="none" stroke="black" stroke-width="2"/>
+                        <path d="M17 15 Q 21 9, 25 15 T 33 15" fill="none" stroke="black" stroke-width="2"/>
+                    </svg>
+                    <span class="text-xs text-black font-medium mt-1">AC Voltage</span>
+                </div>
+
+                <!-- Light Bulb -->
+                <div class="tool-btn flex flex-col items-center justify-center w-full py-1" draggable="true">
+                    <svg width="50" height="30" viewBox="0 0 50 30">
+                        <circle cx="25" cy="15" r="12" fill="none" stroke="black" stroke-width="2"/>
+                        <path d="M19 18 L 22 10 A 3 3 0 0 1 28 10 L 31 18" fill="none" stroke="black" stroke-width="1.5"/>
+                        <line x1="20" y1="16" x2="30" y2="16" stroke="black" stroke-width="1"/>
+                    </svg>
+                    <span class="text-xs text-black font-medium mt-1">Light Bulb</span>
+                </div>
+
+                <!-- Resistor -->
+                <div class="tool-btn flex flex-col items-center justify-center w-full py-1" draggable="true">
+                    <svg width="50" height="30" viewBox="0 0 50 30">
+                        <path d="M5 15 h 8 l 4 -8 l 6 16 l 6 -16 l 6 16 l 4 -8 h 6" fill="none" stroke="black" stroke-width="2" stroke-linejoin="round"/>
+                    </svg>
+                    <span class="text-xs text-black font-medium mt-1">Resistor</span>
+                </div>
+
+                <!-- Capacitor -->
+                <div class="tool-btn flex flex-col items-center justify-center w-full py-1" draggable="true">
+                    <svg width="50" height="30" viewBox="0 0 50 30">
+                        <line x1="5" y1="15" x2="22" y2="15" stroke="black" stroke-width="2"/>
+                        <line x1="22" y1="5" x2="22" y2="25" stroke="black" stroke-width="2"/>
+                        <line x1="28" y1="5" x2="28" y2="25" stroke="black" stroke-width="2"/>
+                        <line x1="28" y1="15" x2="45" y2="15" stroke="black" stroke-width="2"/>
+                    </svg>
+                    <span class="text-xs text-black font-medium mt-1">Capacitor</span>
+                </div>
+
+                <!-- Inductor -->
+                <div class="tool-btn flex flex-col items-center justify-center w-full py-1" draggable="true">
+                    <svg width="50" height="30" viewBox="0 0 50 30">
+                        <path d="M5 15 h 5 m 0 0 c 0 -8, 8 -8, 8 0 c 0 -8, 8 -8, 8 0 c 0 -8, 8 -8, 8 0 h 6" fill="none" stroke="black" stroke-width="2"/>
+                    </svg>
+                    <span class="text-xs text-black font-medium mt-1">Inductor</span>
+                </div>
+
+                <!-- Switch -->
+                <div class="tool-btn flex flex-col items-center justify-center w-full py-1" draggable="true">
+                    <svg width="50" height="30" viewBox="0 0 50 30">
+                        <line x1="5" y1="15" x2="16" y2="15" stroke="black" stroke-width="2"/>
+                        <circle cx="18" cy="15" r="2" fill="black"/>
+                        <line x1="18" y1="15" x2="32" y2="6" stroke="black" stroke-width="2"/>
+                        <circle cx="32" cy="15" r="2" fill="black"/>
+                        <line x1="34" y1="15" x2="45" y2="15" stroke="black" stroke-width="2"/>
+                    </svg>
+                    <span class="text-xs text-black font-medium mt-1">Switch</span>
+                </div>
+            </div>
+
+            <!-- Down Arrow -->
+            <button class="w-full h-8 flex items-center justify-center border-t-[1.5px] border-black bg-[#e2e3e5] hover:bg-gray-300 flex-shrink-0 cursor-pointer">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="black" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"/></svg>
+            </button>
+        </div>
+    </div>
+
+    <!-- Right Panels -->
+    <div class="absolute right-4 top-4 flex flex-col space-y-2 z-10 w-[240px]">
+        
+        <!-- Settings Panel -->
+        <div class="panel-border rounded-md p-3 shadow-md flex flex-col space-y-3">
+            <label class="flex items-center space-x-2 cursor-pointer">
+                <input type="checkbox" class="custom-checkbox" checked>
+                <span class="text-[15px] font-medium">Show Current</span>
+            </label>
+            
+            <div class="pl-6 flex flex-col space-y-2">
+                <label class="flex items-center justify-between cursor-pointer">
+                    <div class="flex items-center space-x-2">
+                        <input type="radio" name="current_type" class="custom-radio" checked>
+                        <span class="text-[14px]">Electrons</span>
+                    </div>
+                    <div class="w-5 h-5 rounded-full bg-[#3bade3] text-white flex items-center justify-center text-xs font-bold font-mono">
+                        -
+                    </div>
+                </label>
+                <label class="flex items-center justify-between cursor-pointer">
+                    <div class="flex items-center space-x-2">
+                        <input type="radio" name="current_type" class="custom-radio">
+                        <span class="text-[14px]">Conventional</span>
+                    </div>
+                    <svg width="20" height="12" viewBox="0 0 20 12">
+                        <line x1="0" y1="6" x2="16" y2="6" stroke="red" stroke-width="2"/>
+                        <polygon points="14,2 20,6 14,10" fill="red"/>
+                    </svg>
+                </label>
+            </div>
+
+            <label class="flex items-center space-x-2 cursor-pointer pt-1">
+                <input type="checkbox" class="custom-checkbox" checked>
+                <span class="text-[15px] font-medium">Labels</span>
+            </label>
+            
+            <label class="flex items-center space-x-2 cursor-pointer">
+                <input type="checkbox" class="custom-checkbox" checked>
+                <span class="text-[15px] font-medium">Values</span>
+            </label>
+
+            <label class="flex items-center space-x-2 cursor-pointer">
+                <input type="checkbox" class="custom-checkbox">
+                <span class="text-[15px] font-medium">Stopwatch</span>
+            </label>
+        </div>
+
+        <!-- Meters Panel -->
+        <div class="panel-border rounded-md p-3 shadow-md">
+            <div class="grid grid-cols-2 gap-4">
+                
+                <!-- Voltmeter -->
+                <div class="flex flex-col items-center cursor-pointer tool-btn rounded p-1" draggable="true">
+                    <svg width="60" height="40" viewBox="0 0 60 40">
+                        <path d="M15 20 L25 10 L45 10 L45 30 L25 30 Z" fill="#eb8c34" stroke="black" stroke-width="1.5"/>
+                        <rect x="30" y="15" width="10" height="10" fill="black"/>
+                        <circle cx="35" cy="20" r="12" fill="none" stroke="transparent"/>
+                        <!-- Probes -->
+                        <path d="M15 40 Q 5 30, 20 25" fill="none" stroke="black" stroke-width="1.5"/>
+                        <path d="M45 40 Q 55 30, 40 25" fill="none" stroke="red" stroke-width="1.5"/>
+                        <line x1="10" y1="35" x2="15" y2="25" stroke="black" stroke-width="3"/>
+                        <line x1="50" y1="35" x2="45" y2="25" stroke="red" stroke-width="3"/>
+                        <text x="35" y="14" font-size="5" text-anchor="middle" font-weight="bold">Voltage</text>
+                    </svg>
+                    <span class="text-[11px] mt-1 border-t border-gray-400 w-full text-center pt-1">Voltmeter</span>
+                </div>
+
+                <!-- Ammeter -->
+                <div class="flex flex-col items-center cursor-pointer tool-btn rounded p-1" draggable="true">
+                    <svg width="60" height="40" viewBox="0 0 60 40">
+                        <rect x="15" y="15" width="30" height="15" fill="#eb8c34" stroke="black" stroke-width="1.5"/>
+                        <rect x="20" y="18" width="20" height="6" fill="white" stroke="black" stroke-width="1"/>
+                        <circle cx="18" cy="22" r="2" fill="red"/>
+                        <circle cx="42" cy="22" r="2" fill="black"/>
+                        <text x="30" y="14" font-size="5" text-anchor="middle" font-weight="bold">Current</text>
+                    </svg>
+                    <span class="text-[11px] mt-1 border-t border-gray-400 w-full text-center pt-1">Ammeter</span>
+                </div>
+
+                <!-- Voltage Chart -->
+                <div class="flex flex-col items-center cursor-pointer tool-btn rounded p-1" draggable="true">
+                    <svg width="60" height="40" viewBox="0 0 60 40">
+                        <rect x="15" y="10" width="35" height="22" rx="2" fill="#3a5a78" stroke="black" stroke-width="1.5"/>
+                        <rect x="18" y="13" width="29" height="16" fill="white"/>
+                        <path d="M18 20 Q22 15, 25 20 T 32 20 T 39 20 T 47 20" fill="none" stroke="#2563eb" stroke-width="1"/>
+                        <line x1="18" y1="21" x2="47" y2="21" stroke="#ccc" stroke-width="0.5"/>
+                        <line x1="25" y1="13" x2="25" y2="29" stroke="#ccc" stroke-width="0.5"/>
+                        <!-- Probes -->
+                        <path d="M8 25 Q 12 18, 15 20" fill="none" stroke="red" stroke-width="1.5"/>
+                        <circle cx="7" cy="27" r="2" fill="red"/>
+                        <text x="32" y="9" font-size="3" fill="white" text-anchor="middle">Voltage (V)</text>
+                        <text x="32" y="31" font-size="3" fill="white" text-anchor="middle">Time</text>
+                    </svg>
+                    <span class="text-[11px] mt-1 text-center">Voltage Chart</span>
+                </div>
+
+                <!-- Current Chart -->
+                <div class="flex flex-col items-center cursor-pointer tool-btn rounded p-1" draggable="true">
+                     <svg width="60" height="40" viewBox="0 0 60 40">
+                        <rect x="15" y="10" width="35" height="22" rx="2" fill="#3a5a78" stroke="black" stroke-width="1.5"/>
+                        <rect x="18" y="13" width="29" height="16" fill="white"/>
+                        <path d="M18 25 L 22 25 L 25 15 L 30 15 L 35 25 L 47 25" fill="none" stroke="#eab308" stroke-width="1"/>
+                        <line x1="18" y1="21" x2="47" y2="21" stroke="#ccc" stroke-width="0.5"/>
+                        <line x1="25" y1="13" x2="25" y2="29" stroke="#ccc" stroke-width="0.5"/>
+                        <!-- Probe -->
+                        <path d="M8 25 Q 12 18, 15 20" fill="none" stroke="black" stroke-width="1.5"/>
+                        <circle cx="7" cy="27" r="2" fill="black"/>
+                        <text x="32" y="9" font-size="3" fill="white" text-anchor="middle">Current (A)</text>
+                        <text x="32" y="31" font-size="3" fill="white" text-anchor="middle">Time</text>
+                    </svg>
+                    <span class="text-[11px] mt-1 text-center">Current Chart</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Advanced Panel Button -->
+        <button class="panel-border rounded-md p-2 shadow-md flex items-center space-x-2 hover:bg-gray-200 w-full text-left transition-colors">
+            <div class="w-4 h-4 bg-[#2cb034] flex items-center justify-center rounded-sm">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+            </div>
+            <span class="text-[15px] font-medium">Advanced</span>
+        </button>
+    </div>
+
+    <!-- Bottom Left Controls -->
+    <div class="absolute left-6 bottom-4 flex flex-col space-y-2 z-10">
+        <!-- View Modes -->
+        <div class="flex space-x-1">
+            <button class="w-10 h-8 panel-border flex items-center justify-center rounded-sm bg-gradient-to-b from-[#e6f0fa] to-[#b3d4f4] border-black">
+                <svg width="24" height="16" viewBox="0 0 24 16">
+                    <rect x="2" y="4" width="8" height="8" fill="#444"/>
+                    <rect x="10" y="4" width="12" height="8" fill="#e0a36a"/>
+                </svg>
+            </button>
+            <button class="w-10 h-8 panel-border flex items-center justify-center rounded-sm bg-white hover:bg-gray-100">
+                <svg width="24" height="16" viewBox="0 0 24 16">
+                    <line x1="4" y1="8" x2="20" y2="8" stroke="black" stroke-width="2"/>
+                    <line x1="10" y1="2" x2="10" y2="14" stroke="black" stroke-width="2"/>
+                    <line x1="14" y1="2" x2="14" y2="14" stroke="black" stroke-width="2"/>
+                </svg>
+            </button>
+        </div>
+        
+        <!-- Zoom Controls -->
+        <div class="flex space-x-1">
+            <button class="w-10 h-10 panel-border flex items-center justify-center rounded-sm bg-white hover:bg-gray-100 shadow-sm">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="black" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                    <circle cx="11" cy="11" r="8"></circle>
+                    <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+                    <line x1="8" y1="11" x2="14" y2="11"></line>
+                </svg>
+            </button>
+            <button class="w-10 h-10 border-[1.5px] border-black flex items-center justify-center rounded-sm bg-[#ffea00] hover:bg-[#e6d300] shadow-sm">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="black" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                    <circle cx="11" cy="11" r="8"></circle>
+                    <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+                    <line x1="11" y1="8" x2="11" y2="14"></line>
+                    <line x1="8" y1="11" x2="14" y2="11"></line>
+                </svg>
+            </button>
+        </div>
+    </div>
+
+    <!-- Bottom Right Controls -->
+    <div class="absolute right-6 bottom-4 flex items-center space-x-3 z-10">
+        
+        <!-- Pause Button -->
+        <button class="w-12 h-12 rounded-full border-2 border-[#5b87a8] bg-[#9ccbef] flex items-center justify-center shadow-md hover:bg-[#8bbce0] transition-colors">
+            <svg width="16" height="20" viewBox="0 0 16 20" fill="black">
+                <rect x="2" y="0" width="4" height="20" rx="1"/>
+                <rect x="10" y="0" width="4" height="20" rx="1"/>
+            </svg>
+        </button>
+
+        <!-- Play Button -->
+        <button class="w-10 h-10 rounded-full border border-gray-400 bg-[#f0f0f0] flex items-center justify-center shadow-sm opacity-60 cursor-not-allowed">
+            <svg width="14" height="16" viewBox="0 0 14 16" fill="#a0a0a0">
+                <polygon points="0,0 14,8 0,16"/>
+            </svg>
+        </button>
+
+        <!-- Reset Button -->
+        <button class="w-14 h-14 rounded-full border-2 border-orange-600 bg-gradient-to-b from-[#f9a03c] to-[#e67c13] flex items-center justify-center shadow-lg hover:brightness-110 transition-all ml-4">
+            <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/>
+                <path d="M3 3v5h5"/>
+            </svg>
+        </button>
+    </div>
+
+    <script>
+        // Basic drag and drop interactivity setup for DP Project Demonstration
+        document.addEventListener('DOMContentLoaded', () => {
+            const draggables = document.querySelectorAll('.tool-btn');
+            const canvasArea = document.getElementById('canvas-area');
+
+            draggables.forEach(draggable => {
+                draggable.addEventListener('dragstart', (e) => {
+                    // Visual feedback when dragging starts
+                    draggable.style.opacity = '0.5';
+                    e.dataTransfer.setData('text/plain', draggable.querySelector('span').innerText);
+                });
+
+                draggable.addEventListener('dragend', () => {
+                    draggable.style.opacity = '1';
+                });
+            });
+
+            canvasArea.addEventListener('dragover', (e) => {
+                e.preventDefault(); // Necessary to allow dropping
+            });
+
+            canvasArea.addEventListener('drop', (e) => {
+                e.preventDefault();
+                const componentType = e.dataTransfer.getData('text/plain');
+                console.log(`Dropped a ${componentType} onto the canvas!`);
+                
+                // In a real simulation, you would instantiate the logic and graphic on the canvas here.
+                // For UI demonstration, we just log it.
+            });
+        });
+    </script>
+</body>
+</html>
